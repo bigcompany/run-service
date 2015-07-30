@@ -64,7 +64,6 @@ module['exports'] = function runService (req, res) {
       return cb(new Error('Request Aborted! Hook source code took more than ' + inSeconds + ' seconds to call hook.res.end()\n\nA delay of this long usually indicates there is an error in the source code for the Hook. \nCheck ' + req.url + ' to ensure hook.res.end() is being called. \n\nIf there are no errors and the Hook actually requires more than ' + inSeconds + ' seconds to execute, you can increase the timeout limit.'));
     }
   }, UNTRUSTED_HOOK_TIMEOUT);
-  console.log('rrr', req.url)
   // load string copy of module onto hook ( for eval loading later... )
   if (req.url === "/") {
     req.url = "/index";
@@ -80,7 +79,6 @@ module['exports'] = function runService (req, res) {
     
     // prepare function to be immediately called
     var str = untrustedSource + "\n module['exports'](req, res)";
-    console.log(str)
     
     // this double try / catch should probably not be needed now that we are using vm module...
     // async try / catch is required for async user errors
