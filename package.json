@@ -1,0 +1,17 @@
+{
+  "name": "run-service",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Marak Squires <marak.squires@gmail.com",
+  "license": "MIT",
+  "description": "Middleware used for running untrusted JavaScript HTTP services",
+  "dependencies": {
+    "hyperquest": "^1.2.0",
+    "stream-buffers": "^2.2.0",
+    "through2": "^2.0.0",
+    "trycatch": "^1.5.11"
+  }
+}
