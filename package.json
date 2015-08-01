@@ -1,20 +1,18 @@
 {
   "name": "run-service",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "tap test/"
   },
   "author": "Marak Squires <marak.squires@gmail.com",
   "license": "MIT",
   "description": "Middleware used for running untrusted JavaScript HTTP services",
   "repository": {
-     "type": "git",
-     "url": "http://github.com/bigcompany/run-service.git"
+    "type": "git",
+    "url": "http://github.com/bigcompany/run-service.git"
   },
   "dependencies": {
-    "hyperquest": "^1.2.0",
-    "stream-buffers": "^2.2.0",
     "through2": "^2.0.0",
     "trycatch": "^1.5.11"
   }
