@@ -1,8 +1,18 @@
 # run-service
 
-Node.js middleware used for running untrusted JavaScript HTTP services.
+Node.js module used for running untrusted streaming JavaScript microservice.
 
 see also: `run-remote-service` module
+
+## Features
+
+ - Runs untrusted JavaScript microservices in a single process
+ - Services work with any Readable / Writable stream interface
+ - Configurable Environments per service
+ - Configurable Virtual Machines per service
+ - Configurable Timeouts on service execution
+ - Catches and traps all possible service error conditions ( through domains and [try-catch](https://github.com/CrabDude/trycatch) module
+
 
 ## Introduction
 
