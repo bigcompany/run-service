@@ -31,7 +31,7 @@ Running untrusted JavaScript code in a safe way is a complex problem. The `run-s
  - Service state
  - Service errors
  - Stream / Socket errors
- - Process state ( somewhat, see read below)
+ - Process state ( somewhat, read below)
 
 Multiple service calls to `run-service` in the same process should not be able to affect the state of other services in that process. All errors that can possibily happen during the execution of a service should be trapped and isolated to not affect the current process.
 
