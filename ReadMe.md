@@ -54,4 +54,4 @@ To ensure isolation of the server memory and cpu, you will want to use the `run-
 
 ## Reporting Security Issues
 
-If you find a way which `run-service` is not adquately isolating services per process or trapping errors, please file a support issue on Github. You can also privately email [hookmaster@hook.com](hookmaster@hook.com)
+If you find a way which `run-service` is not adquately isolating services per process or trapping errors, please file a support issue on Github. You can also privately email [hookmaster@hook.com](hookmaster@hook.io)
