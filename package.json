@@ -19,5 +19,8 @@
     "minimist": "^1.1.2",
     "through2": "^2.0.0",
     "trycatch": "^1.5.11"
+  },
+  "devDependencies": {
+    "colors": "^1.1.2"
   }
 }
