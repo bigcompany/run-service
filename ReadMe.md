@@ -1,6 +1,6 @@
 # run-service
 
-Node.js module used for running untrusted streaming JavaScript microservice.
+Node.js module used for running untrusted streaming JavaScript microservices.
 
 see also: `run-remote-service` module
 

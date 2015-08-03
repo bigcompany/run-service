@@ -10,7 +10,8 @@ module['exports'] = function runservice (config) {
 
   return function _runservice (cb) {
     config.errorHandler = config.errorHandler || function defaultServiceErrorHandler (err) {
-      // Note: you will probably want to pass in a custom error handaler
+      // Note: you will probably want to pass in a custom error handler
+      console.log('Using the DEFAULT error handler. Pass in config.errorHandler for custom errors.');
       throw err;
     };
 
@@ -20,7 +21,7 @@ module['exports'] = function runservice (config) {
     // Do not let the Hook wait more than UNTRUSTED_HOOK_TIMEOUT until it assumes hook.res.end() will never be called...
     // This could cause issues with streaming hooks. We can increase this timeout...or perform static code analysis.
     // The reason we have this timeout is to prevent users from running hooks that never call hook.res.end() and hang forever
-    var UNTRUSTED_HOOK_TIMEOUT = 1000,
+    var UNTRUSTED_HOOK_TIMEOUT = 10000,
         inSeconds = UNTRUSTED_HOOK_TIMEOUT / 1000;
 
     var serviceCompleted = false;
@@ -43,7 +44,8 @@ module['exports'] = function runservice (config) {
       });
 
       // prepare function to be immediately called
-      var str = 'module["exports"] = ' + service.toString() + "\n module['exports'](hook)";
+      var str = "";
+      str += service.toString() + "\n module['exports'](hook)";
       // run script in new-context so we can timeout from things like: "while(true) {}"
 
       var _serviceEnv = {
@@ -64,6 +66,7 @@ module['exports'] = function runservice (config) {
       var _vmEnv = {
         module: module,
         hook: _serviceEnv,
+        require: require,
         rconsole: console // add a new scope `rconsole` which acts as a real console ( for internal development purpose )
       };
 
@@ -73,7 +76,6 @@ module['exports'] = function runservice (config) {
           _vmEnv[e] = config.vm[e];
         }
       }
-      // console.log('vm about to run', str)
       try {
         vm.runInNewContext(str, _vmEnv, { timeout: UNTRUSTED_HOOK_TIMEOUT });
       } catch (err) {

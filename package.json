@@ -5,14 +5,18 @@
   "scripts": {
     "test": "tap test/"
   },
+  "bin": {
+    "run-service": "./bin/run-service"
+  },
   "author": "Marak Squires <marak.squires@gmail.com",
   "license": "MIT",
-  "description": "Middleware used for running untrusted JavaScript HTTP services",
+  "description": "used for running untrusted streaming JavaScript microservices",
   "repository": {
     "type": "git",
     "url": "http://github.com/bigcompany/run-service.git"
   },
   "dependencies": {
+    "minimist": "^1.1.2",
     "through2": "^2.0.0",
     "trycatch": "^1.5.11"
   }
