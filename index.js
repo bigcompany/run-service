@@ -5,14 +5,13 @@ var vm = require("vm");
 module['exports'] = function runservice (config) {
 
   config = config || {};
-  var service = config.service.toString();
-  var req = config.env.req;
-  var res = config.env.res;
+
+  var service = config.service, req = config.env.req, res = config.env.res;
 
   return function _runservice (cb) {
     config.errorHandler = config.errorHandler || function defaultServiceErrorHandler (err) {
       // Note: you will probably want to pass in a custom error handler
-      console.log('Using the DEFAULT error handler. Pass in config.errorHandler for custom errors.');
+      console.log('Using DEFAULT errorHandler. Pass in config.errorHandler for custom error handling.')
       throw err;
     };
 
@@ -45,7 +44,7 @@ module['exports'] = function runservice (config) {
 
       // prepare function to be immediately called
       var str = "";
-      str += 'var _runUntrustedServiceInVm = ' + service.toString() + "; \n _runUntrustedServiceInVm(hook);";
+      str += service.toString() + "\n module['exports'](hook)";
       // run script in new-context so we can timeout from things like: "while(true) {}"
 
       var _serviceEnv = {
@@ -77,7 +76,8 @@ module['exports'] = function runservice (config) {
         }
       }
       try {
-        vm.runInNewContext(str, _vmEnv, { timeout: UNTRUSTED_HOOK_TIMEOUT });
+        // displayErrors: true, this means any errors inside the service will be piped to stderr
+        vm.runInNewContext(str, _vmEnv, { timeout: UNTRUSTED_HOOK_TIMEOUT, displayErrors: true });
       } catch (err) {
         return errorHandler(err);
       }

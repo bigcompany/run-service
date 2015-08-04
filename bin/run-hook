@@ -148,16 +148,79 @@ process.stdin.host = env.input.host;
 process.stdin.url = env.input.url;
 process.stdin.connection = env.input.connection;
 
+// TODO: all custom env that hook.io is passing in should be configurable / not part of this project
+// Customize the service a bit ( TODO: remove these and make configurable )
+var open = function open (url) {
+  return request(url, {
+    "headers": {
+      "accept": "*/*"
+    }
+  });
+};
+
+var post = function post (url) {
+  return request.post(url, {
+    "headers": {
+      "accept": "*/*"
+    }
+  });
+};
+
+var logs = require('hook.io-logs');
+var debugOutput = [];
+
+// A simple debug utility for inspecting data from inside a running hook
+var debug = function debug (arg) {
+  // create log entry
+  var entry = {
+    time: new Date(),
+    data: JSON.stringify(arg),
+    ip : process.stdin.connection.remoteAddress
+  };
+  // push entry to log datasource
+  logs.push("/" + service.owner + "/" + service.name, entry, function(err, res) {
+    if (err) {
+      console.log('Error pushing log entry to datasource! ', err.message);
+    }
+  });
+  // push entry into temporary buffer for use in immediate request response
+  debugOutput.push(entry);
+};
+
+
+/*
+// Remark: Let's put a special rule for the gateway hook,
+// since the gateway allows arbitrary code and that can call the datastore...
+// and the gateway owner is "Marak"...then all anonymous data would be keyed to Hook owner "Marak"
+// since that would probably mess up Marak's account, we create a special key for anonymous
+// datastore requests coming from gateway.hook.io
+*/
+var _root = service.owner;
+if (service.owner === "Marak" && service.name === "gateway") {
+ _root = "anonymous";
+}
+
+// Wrap datastore so that all entries are keyed to owner of hook
+var Datastore = require('hook.io-datastore').Datastore;
+var datastore = new Datastore({ root: _root });
+//_env.datastore = datastore;
+
 // run the service
 rs({
   service: argv.c,
   env: {
     req: process.stdin,
     res: output,
-    params: env.params
+    params: env.params,
+    datastore: datastore,
+    debug: debug,
+    open: open,
+    post: post
   },
   vm: {
-   console: console,
+    console: {
+      log: debug
+    },
    __dirname: __dirname,
    require: require
  },
