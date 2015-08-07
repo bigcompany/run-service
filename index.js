@@ -6,7 +6,16 @@ module['exports'] = function runservice (config) {
 
   config = config || {};
 
-  var service = config.service, req = config.env.req, res = config.env.res;
+  var service = config.service,
+      req = config.env.req,
+      res = config.env.res,
+      isStreaming = config.env.isStreaming;
+
+  if (typeof isStreaming === "undefined") {
+    if (req._readableState && req._readableState.buffer && req._readableState.buffer.length) {
+      isStreaming = true;
+    }
+  }
 
   return function _runservice (cb) {
     config.errorHandler = config.errorHandler || function defaultServiceErrorHandler (err) {
@@ -33,13 +42,9 @@ module['exports'] = function runservice (config) {
     // this double try / catch should probably not be needed now that we are using vm module...
     // async try / catch is required for async user errors
     trycatch(function() {
-      var isStreaming = false;
-      if (req._readableState && req._readableState.buffer && req._readableState.buffer.length) {
-        isStreaming = true;
-      }
 
       res.on('finish', function(){
-        serviceCompleted = true
+        serviceCompleted = true;
       });
 
       // prepare function to be immediately called
