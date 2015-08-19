@@ -18,6 +18,7 @@ module['exports'] = function runservice (config) {
   }
 
   return function _runservice (cb) {
+
     config.errorHandler = config.errorHandler || function defaultServiceErrorHandler (err) {
       // Note: you will probably want to pass in a custom error handler
       console.log('Using DEFAULT errorHandler. Pass in config.errorHandler for custom error handling.')
@@ -25,7 +26,6 @@ module['exports'] = function runservice (config) {
     };
 
     var errorHandler = config.errorHandler;
-
     // Do not let the Hook wait more than UNTRUSTED_HOOK_TIMEOUT until it assumes hook.res.end() will never be called...
     // This could cause issues with streaming hooks. We can increase this timeout...or perform static code analysis.
     // The reason we have this timeout is to prevent users from running hooks that never call hook.res.end() and hang forever
@@ -49,7 +49,9 @@ module['exports'] = function runservice (config) {
 
       // prepare function to be immediately called
       var str = "";
-      str += service.toString() + "\n module['exports'](hook)";
+
+      str += '_runUntrustedServiceInVm = ' + service.toString() + "; \n _runUntrustedServiceInVm(hook)";
+      //  str += service.toString() + "\n module['exports'](hook)";
       // run script in new-context so we can timeout from things like: "while(true) {}"
 
       var _serviceEnv = {
@@ -80,6 +82,7 @@ module['exports'] = function runservice (config) {
           _vmEnv[e] = config.vm[e];
         }
       }
+
       try {
         // displayErrors: true, this means any errors inside the service will be piped to stderr
         vm.runInNewContext(str, _vmEnv, { timeout: UNTRUSTED_HOOK_TIMEOUT, displayErrors: true });
