@@ -23,11 +23,8 @@ test("attempt to run hello service", function (t) {
   var input = new Readable;
   var output = Writable();
 
-  t.plan(1);
-
   output._write = function (chunk, enc, next) {
     t.equal(chunk.toString(), "Hello!");
-    // console.log(chunk.toString());
     next();
   };
 
@@ -35,8 +32,8 @@ test("attempt to run hello service", function (t) {
     console.log('err', err)
   });
 
-  output.on('end', function end () {
-    console.log('output ended')
+  output.on('finish', function end () {
+    t.end();
   });
 
   rs({
@@ -51,22 +48,19 @@ test("attempt to run hello service", function (t) {
       console: console
     },
    })(function(err){
+    console.log('finished')
     if(err) throw err;
   });
 
 });
-
 
 test("attempt to run echoString service", function (t) {
 
   var input = new Readable;
   var output = Writable();
 
-  t.plan(1);
-
   output._write = function (chunk, enc, next) {
     t.equal(chunk.toString(), "testing 123");
-    // console.log(chunk.toString());
     next();
   };
 
@@ -74,8 +68,8 @@ test("attempt to run echoString service", function (t) {
     console.log('err', err)
   });
 
-  output.on('end', function end () {
-    console.log('output ended')
+  output.on('finish', function end () {
+    t.end();
   });
 
   rs({ 
@@ -93,3 +87,4 @@ test("attempt to run echoString service", function (t) {
     if(err) throw err;
   });
 });
+

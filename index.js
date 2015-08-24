@@ -1,3 +1,4 @@
+
 var through = require('through2');
 var trycatch = require('trycatch');
 var vm = require("vm");
@@ -10,6 +11,19 @@ module['exports'] = function runservice (config) {
       req = config.env.req,
       res = config.env.res,
       isStreaming = config.env.isStreaming;
+
+  if (typeof service === "undefined") {
+    throw new Error('service is undefined');
+  }
+
+  if (typeof req === "undefined") {
+    throw new Error('req is undefined');
+  }
+
+  if (typeof res === "undefined") {
+    throw new Error('res is undefined');
+  }
+
 
   if (typeof isStreaming === "undefined") {
     if (req._readableState && req._readableState.buffer && req._readableState.buffer.length) {
@@ -45,7 +59,9 @@ module['exports'] = function runservice (config) {
 
       res.on('finish', function(){
         serviceCompleted = true;
+        clearTimeout(serviceCompletedTimer);
       });
+
 
       // prepare function to be immediately called
       var str = "";

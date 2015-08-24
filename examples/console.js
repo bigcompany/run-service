@@ -15,10 +15,6 @@ output.on('error', function(err){
   console.log('err', err)
 });
 
-output.end = function end () {
-  process.exit();
-};
-
 var service = function testService (opts) {
   var res = opts.res;
   var colors = require('colors');
