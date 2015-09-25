@@ -1,6 +1,7 @@
-
 var through = require('through2');
-var trycatch = require('trycatch');
+// TODO: make trycatch configurable
+//var trycatch = require('trycatch');
+//trycatch.configure({'long-stack-traces': true});
 var vm = require("vm");
 
 module['exports'] = function runservice (config) {
@@ -23,7 +24,6 @@ module['exports'] = function runservice (config) {
   if (typeof res === "undefined") {
     throw new Error('res is undefined');
   }
-
 
   if (typeof isStreaming === "undefined") {
     if (req._readableState && req._readableState.buffer && req._readableState.buffer.length) {
@@ -55,7 +55,9 @@ module['exports'] = function runservice (config) {
 
     // this double try / catch should probably not be needed now that we are using vm module...
     // async try / catch is required for async user errors
-    trycatch(function() {
+    // TODO: make trycatch configurable
+    // Sometimes you want it, sometimes you don't
+    // trycatch(function() {
 
       res.on('finish', function(){
         serviceCompleted = true;
@@ -66,10 +68,10 @@ module['exports'] = function runservice (config) {
       // prepare function to be immediately called
       var str = "";
 
-      str += '_runUntrustedServiceInVm = ' + service.toString() + "; \n _runUntrustedServiceInVm(hook)";
-      //  str += service.toString() + "\n module['exports'](hook)";
+      //str += '_runUntrustedServiceInVm = ' + service.toString() + "; \n _runUntrustedServiceInVm(hook)";
+      str = service.toString();
+      str += service.toString() + "\n module['exports'](hook)";
       // run script in new-context so we can timeout from things like: "while(true) {}"
-
       var _serviceEnv = {
           env: req.env,
           req: req,
@@ -105,8 +107,6 @@ module['exports'] = function runservice (config) {
       } catch (err) {
         return errorHandler(err);
       }
-    }, function(err) {
-      return errorHandler(err);
-    });
+
   }
 }
