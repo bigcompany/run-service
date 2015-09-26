@@ -69,7 +69,7 @@ module['exports'] = function runservice (config) {
       var str = "";
 
       //str += '_runUntrustedServiceInVm = ' + service.toString() + "; \n _runUntrustedServiceInVm(hook)";
-      str = service.toString();
+      //str = service.toString();
       str += service.toString() + "\n module['exports'](hook)";
       // run script in new-context so we can timeout from things like: "while(true) {}"
       var _serviceEnv = {
