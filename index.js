@@ -40,18 +40,25 @@ module['exports'] = function runservice (config) {
     };
 
     var errorHandler = config.errorHandler;
-    // Do not let the Hook wait more than UNTRUSTED_HOOK_TIMEOUT until it assumes hook.res.end() will never be called...
+    // Do not let the Hook wait more than customTimeout until it assumes hook.res.end() will never be called...
     // This could cause issues with streaming hooks. We can increase this timeout...or perform static code analysis.
     // The reason we have this timeout is to prevent users from running hooks that never call hook.res.end() and hang forever
-    var UNTRUSTED_HOOK_TIMEOUT = 10000,
-        inSeconds = UNTRUSTED_HOOK_TIMEOUT / 1000;
+    var customTimeout;
+
+    if (typeof config.env.customTimeout === "number") {
+      customTimeout = config.env.customTimeout;
+    } else {
+      customTimeout = 10000;
+    }
+
+    inSeconds = customTimeout / 1000;
 
     var serviceCompleted = false;
     var serviceCompletedTimer = setTimeout(function(){
       if (!serviceCompleted) {
         return errorHandler(new Error('Request Aborted! Hook source code took more than ' + inSeconds + ' seconds to call hook.res.end()\n\nA delay of this long usually indicates there is an error in the source code for the Hook. \nCheck source code to ensure hook.res.end() is being called. \n\nIf there are no errors and the Hook actually requires more than ' + inSeconds + ' seconds to execute, please contact hookmaster@hook.io and we can increase your timeout limits.'));
       }
-    }, UNTRUSTED_HOOK_TIMEOUT);
+    }, customTimeout);
 
     // this double try / catch should probably not be needed now that we are using vm module...
     // async try / catch is required for async user errors
@@ -103,7 +110,7 @@ module['exports'] = function runservice (config) {
 
       try {
         // displayErrors: true, this means any errors inside the service will be piped to stderr
-        vm.runInNewContext(str, _vmEnv, { timeout: UNTRUSTED_HOOK_TIMEOUT, displayErrors: true });
+        vm.runInNewContext(str, _vmEnv, { timeout: customTimeout, displayErrors: true });
       } catch (err) {
         return errorHandler(err);
       }
