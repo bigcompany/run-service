@@ -71,13 +71,19 @@ module['exports'] = function runservice (config) {
         clearTimeout(serviceCompletedTimer);
       });
 
-
       // prepare function to be immediately called
       var str = "";
+      if (
+        config.env && 
+        config.env.resource &&
+        config.env.resource.language === "es7"
+      ) {
+        // var es7error = "The es7 function threw an uncaught error. In order to get an error you must place your es7 code in a try / catch block. Note: hook.io plain JavaScript language support has much better stack traces.";
+        str += service.toString() + "\n module['exports'].default(hook).catch(function(err){ hook.res.end(err.message); })";
+      } else {
+        str += service.toString() + "\n module['exports'](hook)";
+      }
 
-      //str += '_runUntrustedServiceInVm = ' + service.toString() + "; \n _runUntrustedServiceInVm(hook)";
-      //str = service.toString();
-      str += service.toString() + "\n module['exports'](hook)";
       // run script in new-context so we can timeout from things like: "while(true) {}"
       var _serviceEnv = {
           env: req.env,
@@ -98,6 +104,7 @@ module['exports'] = function runservice (config) {
         module: module,
         hook: _serviceEnv,
         require: require,
+        regeneratorRuntime: global.regeneratorRuntime,
         rconsole: console // add a new scope `rconsole` which acts as a real console ( for internal development purpose )
       };
 
