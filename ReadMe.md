@@ -12,7 +12,7 @@ You are encouraged to use this module as-is, or modify it to suite your needs. I
 
 ## Features
 
- - Runs untrusted JavaScript microservices in a single process
+ - Runs each untrusted JavaScript microservices in individual process
  - Services work with any Readable / Writable stream interface
  - Ships with `run-service` binary for running services from CLI using STDIN / STDOUT streams
  - Environments per service
