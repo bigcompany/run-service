@@ -18,7 +18,7 @@ You are encouraged to use this module as-is, or modify it to suite your needs. I
  - Environments per service
  - Virtual Machines per service
  - Configurable Timeouts per service
- - Robust Error Handling ( through domains and [try-catch](https://github.com/CrabDude/trycatch) module
+ - Robust Error Handling
 
 
 ## Caveats
