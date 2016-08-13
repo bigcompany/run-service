@@ -81,9 +81,11 @@ module['exports'] = function runservice (config) {
         // var es7error = "The es7 function threw an uncaught error. In order to get an error you must place your es7 code in a try / catch block. Note: hook.io plain JavaScript language support has much better stack traces.";
         str += service.toString() + "\n module['exports'].default(hook).catch(function(err){ hook.res.end(err.message); })";
       } else {
-        str += service.toString() + "\n module['exports'](hook)";
+        // Only works locally
+        str += '(' + service.toString() + ')(hook)';
+        // TODO: remove / fix as it only works in hook.io, fix upstream
+        //str += service.toString() + "module['exports'](hook)";
       }
-
       // run script in new-context so we can timeout from things like: "while(true) {}"
       var _serviceEnv = {
           env: req.env,
