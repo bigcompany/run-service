@@ -7,7 +7,6 @@ var vm = require("vm");
 module['exports'] = function runservice (config) {
 
   config = config || {};
-
   var service = config.service,
       req = config.env.req,
       res = config.env.res,
@@ -81,11 +80,13 @@ module['exports'] = function runservice (config) {
         // var es7error = "The es7 function threw an uncaught error. In order to get an error you must place your es7 code in a try / catch block. Note: hook.io plain JavaScript language support has much better stack traces.";
         str += service.toString() + "\n module['exports'].default(hook).catch(function(err){ hook.res.end(err.message); })";
       } else {
-        // Only works locally
-        str += '(' + service.toString() + ')(hook)';
-        // Note: Thist was removed as legacy hook.io API
-        // we are now using anonymous function wrapping instead of calling module.exports directly for js services
-        // str += service.toString() + "module['exports'](hook)";
+        // Note: The way modules and functions are wrapped is in flux
+        // The current approach is to meta-program a wrap around the function to call itself
+        // This seems to work in most cases, but I have seen double execution in other cases
+        // The current solution may be working, but if it doesnt we can try switching to compiling a module and calling its exports
+        str += service.toString() + "\n\nmodule['exports'](hook /*, res, callback */)";
+        // We've previously tried anonymous function wrapping, but this can be brittle / doesn't work well with module.exports
+        //str += '(\n' + str + '\n)(hook)';
       }
       // run script in new-context so we can timeout from things like: "while(true) {}"
       var _serviceEnv = {
@@ -105,11 +106,29 @@ module['exports'] = function runservice (config) {
 
       var _vmEnv = {
         module: module,
+        // req: req,
+        // res: res,
+        // callback has been removed ( for now ), althought it *should* work and end the request
+        // callback: cb,
         hook: _serviceEnv,
         require: require,
         regeneratorRuntime: global.regeneratorRuntime,
         rconsole: console // add a new scope `rconsole` which acts as a real console ( for internal development purpose )
       };
+
+      /*
+         Remark: There has been some discussion about returning a promise ( in addition to a possible callback API )
+         This would allow users to return a promise instead of ending the response
+         var promise = new Promise(function(resolve, reject) {
+            // do a thing, possibly async, then…
+            if (true) {
+              resolve("Stuff worked!");
+            }
+            else {
+              reject(Error("It broke"));
+            }
+          });
+      */
 
       // If any addition vm variables have been passed in that require a top-level context in the VM
       if (typeof config.vm === "object") {
