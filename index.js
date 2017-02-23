@@ -7,11 +7,11 @@ var vm = require("vm");
 module['exports'] = function runservice (config) {
 
   config = config || {};
+
   var service = config.service,
       req = config.env.req,
       res = config.env.res,
       isStreaming = config.env.isStreaming;
-
   if (typeof service === "undefined") {
     throw new Error('service is undefined');
   }
@@ -69,7 +69,6 @@ module['exports'] = function runservice (config) {
         serviceCompleted = true;
         clearTimeout(serviceCompletedTimer);
       });
-
       // prepare function to be immediately called
       var str = "";
       if (
@@ -78,24 +77,55 @@ module['exports'] = function runservice (config) {
         (config.env.resource.language === "babel" || config.env.resource.language === "es7")
       ) {
         // var es7error = "The es7 function threw an uncaught error. In order to get an error you must place your es7 code in a try / catch block. Note: hook.io plain JavaScript language support has much better stack traces.";
-        str += service.toString() + "\n module['exports'].default(hook).catch(function(err){ hook.res.end(err.message); })";
+        str += service.toString() + "\n module['exports'].default(hook, res, cb).catch(function(err){ hook.res.end(err.message);})";
       } else {
         // Note: The way modules and functions are wrapped is in flux
         // The current approach is to meta-program a wrap around the function to call itself
         // This seems to work in most cases, but I have seen double execution in other cases
         // The current solution may be working, but if it doesnt we can try switching to compiling a module and calling its exports
-        str += service.toString() + "\n\nmodule['exports'](hook /*, res, callback */)";
+        str += service.toString() + "\n\n module['exports'](hook, res, cb)";
         // We've previously tried anonymous function wrapping, but this can be brittle / doesn't work well with module.exports
         //str += '(\n' + str + '\n)(hook)';
       }
+
+      /* TODO: add support for proxying request parameters in VM
+
+      var proxy = new Proxy(req, {
+        get: function(target, name) {
+           //console.log("!!Getting pproperty '" + name + "'", env.input[name]);
+
+           if (!(name in target)) {
+               // console.log("!! Getting non-existant property '" + name + "'");
+               return undefined;
+           }
+           return target[name];
+         },
+         set: function(target, name, value) {
+           // console.log(">>>!!!Setting property '" + name + "', initial value: " + value);
+           if (!(name in target)) {
+               console.log("OTHER Setting non-existant property '" + name + "', initial value: " + value);
+               console.error(JSON.stringify({ type: "setvar", payload: { key: name, value: value } }));
+           }
+           target[name] = value;
+           return true;
+         }
+      });
+      */
+
       // run script in new-context so we can timeout from things like: "while(true) {}"
       var _serviceEnv = {
-          env: req.env,
-          req: req,
-          res: res,
-          streaming: isStreaming,
-          __dirname: __dirname
-        };
+        env: req.env,
+        req: req, // TODO: proxy
+        res: res,
+        streaming: isStreaming,
+        __dirname: __dirname
+      };
+
+      // legacy api support for function(hook) syntax
+      // mneeds to map request parameters into service env?
+      for (var p in req) {
+        _serviceEnv[p] = req[p];
+      }
 
       // If any addition env variables have been passed in that require a context inside the vm fn
       if (typeof config.env === "object") {
@@ -104,12 +134,34 @@ module['exports'] = function runservice (config) {
         }
       }
 
+      /* Removed. No need to add param setter / getters to legacy API,
+         To keep code clean, we'll only add this to the new API / depreciate the old API
+        var proxy2 = new Proxy(_serviceEnv, {
+          get: function(target, name) {
+            // console.log("!!Getting pproperty '" + name + "'", target[name]);
+             if (!(name in target)) {
+                 // console.log("Getting non-existant property '" + name + "'");
+                 return undefined;
+             }
+             return target[name];
+          },
+          set: function(target, name, value) {
+            // console.log("!!!Setting property '" + name + "', initial value: " + value);
+            if (!(name in target)) {
+               // console.log("SENDING MESSAGE Setting non-existant property '" + name + "', initial value: " + value);
+               console.error(JSON.stringify({ type: "setvar", payload: { key: name, value: value } }));
+            }
+            target[name] = value;
+            return true;
+           }
+        });
+      */
+
       var _vmEnv = {
         module: module,
-        // req: req,
-        // res: res,
-        // callback has been removed ( for now ), althought it *should* work and end the request
-        // callback: cb,
+        req: req, // TODO: proxy
+        res: res,
+        cb: cb,
         hook: _serviceEnv,
         require: require,
         regeneratorRuntime: global.regeneratorRuntime,
@@ -129,7 +181,6 @@ module['exports'] = function runservice (config) {
             }
           });
       */
-
       // If any addition vm variables have been passed in that require a top-level context in the VM
       if (typeof config.vm === "object") {
         for (var e in config.vm) {
