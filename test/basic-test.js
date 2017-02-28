@@ -9,9 +9,11 @@ var Readable = require('stream').Readable;
 var Writable = require('stream').Writable;
 
 // a few example / test services to use as testing fixtures
-var helloService = require('../examples/services/hello');
-var echoStringService = require('../examples/services/echoString');
+//var helloService = require('../examples/services/hello');
+//var echoStringService = require('../examples/services/echoString');
 
+var helloService = require('fs').readFileSync(__dirname + '/../examples/services/hello.js').toString();
+var echoStringService = require('fs').readFileSync(__dirname + '/../examples/services/echoString.js').toString();
 
 test("attempt to load run-service module", function (t) {
   rs = require('../');

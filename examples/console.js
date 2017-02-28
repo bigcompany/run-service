@@ -15,12 +15,7 @@ output.on('error', function(err){
   console.log('err', err)
 });
 
-var service = function testService (opts) {
-  var res = opts.res;
-  var colors = require('colors');
-  res.write(colors.blue('hello') + ' i am a service: '+ opts.params);
-  res.end();
-};
+var service = require('fs').readFileSync(__dirname + '/test-service.js').toString();
 
 runService({ 
   service: service,

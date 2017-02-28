@@ -1,4 +1,4 @@
-module['exports'] = function hello (service) {
-  service.res.write('Hello!')
-  service.res.end();
+module['exports'] = function hello (req, res, next) {
+  res.write('Hello!')
+  res.end();
 };
